@@ -2,23 +2,24 @@ services:
   navidrome:
     image: deluan/navidrome:latest
     container_name: navidrome
-    user: "1000:1000"              # cambia a tu UID:GID real (id -u / id -g)
+    user: "${PUID}:${PGID}"
     ports:
-      - "4533:4533"
+      - "${ND_PORT}:4533"
     environment:
-      ND_SCANNER_SCHEDULE: "@every 1h"
-      ND_SCANNER_IGNOREDOTFOLDERS: "true"
-      ND_LOGLEVEL: "info"
-      ND_SESSIONTIMEOUT: "240h"
-      ND_BASEURL: "https://music.permuy.org"
-      ND_PLUGINS_ENABLED: "true"
-      ND_PLUGINS_AUTORELOAD: "false"
+      TZ: "${TZ}"
+      ND_SCANNER_SCHEDULE: "${ND_SCANNER_SCHEDULE}"
+      ND_SCANNER_IGNOREDOTFOLDERS: "${ND_SCANNER_IGNOREDOTFOLDERS}"
+      ND_LOGLEVEL: "${ND_LOGLEVEL}"
+      ND_SESSIONTIMEOUT: "${ND_SESSIONTIMEOUT}"
+      ND_BASEURL: "${ND_BASEURL}"
+      ND_PLUGINS_ENABLED: "${ND_PLUGINS_ENABLED}"
+      ND_PLUGINS_AUTORELOAD: "${ND_PLUGINS_AUTORELOAD}"
       ND_BACKUP_PATH: "/data/backup"
-      ND_BACKUP_SCHEDULE: "@every 24h"
-      ND_BACKUP_COUNT: 7
+      ND_BACKUP_SCHEDULE: "${ND_BACKUP_SCHEDULE}"
+      ND_BACKUP_COUNT: "${ND_BACKUP_COUNT}"
     volumes:
       - ./data:/data
-      - /home/apermuy/Música:/music:ro
+      - ${MUSIC_DIR}:/music:ro
     restart: unless-stopped
 
   nfs-server:
@@ -27,23 +28,39 @@ services:
     privileged: true               # requerido: NFS necesita acceso a módulos del kernel del host
     environment:
       SHARED_DIRECTORY: /music
-      READ_ONLY: "true"            # exporta en modo ro, coherente con el bind mount de abajo
-      SYNC: "true"                 # escrituras síncronas (n/a aquí al ser ro, pero explícito)
-      PERMITTED: "192.168.1.50"    # IP de tu equipo cliente; cambia por la real, o usa "192.168.1.*" para el rango
+      READ_ONLY: "${NFS_READ_ONLY}"
+      SYNC: "${NFS_SYNC}"
+      PERMITTED: "${NFS_PERMITTED}"
     volumes:
-      - /home/apermuy/Música:/music:ro
+      - ${MUSIC_DIR}:/music:ro
     ports:
-      - "2049:2049"
+      - "${NFS_PORT}:2049"
     restart: unless-stopped
 
   npm:
     image: jc21/nginx-proxy-manager:latest
     container_name: npm
+    environment:
+      TZ: "${TZ}"
     ports:
-      - "80:80"       # HTTP — necesario para el reto ACME/Let's Encrypt
-      - "443:443"     # HTTPS
-      - "81:81"       # panel de administración web de NPM
+      - "${NPM_HTTP_PORT}:80"      # HTTP — necesario para el reto ACME/Let's Encrypt
+      - "${NPM_HTTPS_PORT}:443"    # HTTPS
+      - "${NPM_ADMIN_PORT}:81"     # panel de administración web de NPM
     volumes:
       - ./npm/data:/data
       - ./npm/letsencrypt:/etc/letsencrypt
+    restart: unless-stopped
+
+  duckdns:
+    image: lscr.io/linuxserver/duckdns:latest
+    container_name: duckdns
+    environment:
+      PUID: "${PUID}"
+      PGID: "${PGID}"
+      TZ: "${TZ}"
+      SUBDOMAINS: "${DUCKDNS_SUBDOMAINS}"
+      TOKEN: "${DUCKDNS_TOKEN}"
+      LOG_FILE: "${DUCKDNS_LOG_FILE}"
+    volumes:
+      - ./duckdns/config:/config
     restart: unless-stopped

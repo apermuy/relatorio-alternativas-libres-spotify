@@ -25,7 +25,6 @@ El relatorio recorre:
 
 - **Qué es Spotify y cómo funciona** a nivel técnico: microservicios en Java/Python, infraestructura en Google Cloud, frontend en React/Redux/Webpack, backend con PostgreSQL y Cassandra, todo orquestado con Docker + Terraform + Kubernetes — y construido, en buena parte, sobre software libre.
 - **Cómo genera ingresos**: suscripciones Premium, publicidad, acuerdos con terceros y el "Spotify Partner Program".
-- **El mito del pago por stream**: Spotify no paga por reproducción de forma directa; entran en juego ubicación, dispositivo, círculo de amigos y precio.
 - **Qué datos recoge de ti**: desde datos de cuenta (nombre, email, fecha de nacimiento, género, país) hasta historial de búsquedas y reproducciones, interacciones con anuncios, dirección IP, dispositivos conectados, ubicación aproximada o exacta, y grabaciones de voz cuando usas esas funciones — todo documentado en su política de privacidad (junio 2026).
 - **La alternativa DIY**: montar tu propio servidor con hardware reacondicionado, Raspberry Pi o NAS, usando Navidrome como reemplazo funcional.
 - **Qué ganas y qué pierdes** con el cambio — control, privacidad e independencia, a cambio de catálogo inmediato y comodidad.
@@ -109,8 +108,9 @@ Antes de levantar el stack, asegúrate de que estos puertos están libres en el 
 
 ## Puesta en marcha
 
-1. Clona el repositorio y entra en `docker/`.
-2. Ajusta en `docker-compose.yml`:
+0. Clona el repositorio y entra en `docker/`.
+1. Mueve el fichero env-example a .env 
+2. Ajusta en `.env`:
    - La ruta de tu librería musical (bind mounts de `navidrome` y `nfs-server`).
    - `user: "UID:GID"` de Navidrome al usuario propietario de esa carpeta (verifica con `id <usuario>`).
    - `PERMITTED` en `nfs-server`, con la IP o rango de tu red que podrá montar el share.
@@ -120,6 +120,12 @@ Antes de levantar el stack, asegúrate de que estos puertos están libres en el 
    ```bash
    docker compose up -d
    ```
+   Es probable que devuelva error de permisos si el uid del usuario que ejecuta docker no coincide con los permisos del directorio **data**; para resolverlo(ejemplo): 
+   ```
+   bash
+   sudo chown apermuy data
+   ```
+
 4. Entra al panel de Nginx Proxy Manager (`http://<IP-del-host>:81`) y configura un *Proxy Host* apuntando a `navidrome:4533`, con SSL vía Let's Encrypt.
 5. Accede a Navidrome desde tu dominio configurado (`tu-subdominio.duckdns.org`, o tu propio dominio si apunta a esa IP).
 

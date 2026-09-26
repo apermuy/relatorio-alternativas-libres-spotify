@@ -1,0 +1,33 @@
+# ─── Comunes ───────────────────────────────────────────────
+PUID=1000                      # id -u
+PGID=1000                      # id -g
+TZ=Europe/Madrid
+MUSIC_DIR=/srv/music
+
+# ─── Navidrome ─────────────────────────────────────────────
+ND_PORT=4533
+ND_BASEURL=https://ejemplo.duckdns.org
+ND_SCANNER_SCHEDULE=@every 1h
+ND_SCANNER_IGNOREDOTFOLDERS=true
+ND_LOGLEVEL=info
+ND_SESSIONTIMEOUT=240h
+ND_PLUGINS_ENABLED=true
+ND_PLUGINS_AUTORELOAD=false
+ND_BACKUP_SCHEDULE=@every 24h
+ND_BACKUP_COUNT=7
+
+# ─── NFS ───────────────────────────────────────────────────
+NFS_PORT=2049
+NFS_PERMITTED=192.168.1.50     # IP del cliente, o 192.168.1.* para el rango
+NFS_READ_ONLY=true
+NFS_SYNC=true
+
+# ─── Nginx Proxy Manager ───────────────────────────────────
+NPM_HTTP_PORT=80
+NPM_HTTPS_PORT=443
+NPM_ADMIN_PORT=81
+
+# ─── DuckDNS ───────────────────────────────────────────────
+DUCKDNS_SUBDOMAINS=tunombre    # solo "tunombre" de tunombre.duckdns.org, separados por comas
+DUCKDNS_TOKEN=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+DUCKDNS_LOG_FILE=false
